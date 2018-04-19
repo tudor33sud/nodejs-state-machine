@@ -7,7 +7,6 @@
  * @property {Array.<Transition>} transitions
  */
 const EventEmitter = require('events');
-const _ = require('lodash');
 const required = (requiredParamName) => { throw new Error(`Missing required parameter ${requiredParamName}`) };
 
 const camelize = (str) => {
