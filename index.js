@@ -87,10 +87,8 @@ module.exports = class StateMachine extends EventEmitter {
         }
 
 
-        this[camelizedTransitionName] = () => {
-            this._transition(camelizedTransitionName);
+        this[camelizedTransitionName] = () => this._transition(camelizedTransitionName);
 
-        }
     }
 
     _addState(state) {
