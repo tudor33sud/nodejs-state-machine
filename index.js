@@ -10,8 +10,8 @@ const EventEmitter = require('events');
 const required = (requiredParamName) => { throw new Error(`Missing required parameter ${requiredParamName}`) };
 
 const camelize = (str) => {
-    let string = str.toLowerCase().replace(/[^A-Za-z0-9]/g, ' ').split(' ')
-        .reduce((result, word) => result + capitalize(word.toLowerCase()));
+    let string = str.replace(/[^A-Za-z0-9]/g, ' ').split(' ')
+        .reduce((result, word) => result + capitalize(word));
     return string.charAt(0).toLowerCase() + string.slice(1);
 };
 
