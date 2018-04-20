@@ -1,4 +1,4 @@
-# Project Title
+# Nodejs State Machine
 
 Simple state machine management in Node JS without any external dependency
 
