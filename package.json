@@ -17,6 +17,9 @@
     "state-machine",
     "finite"
   ],
+  "engines": {
+    "node": ">=6.1.4"
+  },
   "author": "Tudor Suditu",
   "license": "MIT",
   "bugs": {
