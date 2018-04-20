@@ -75,10 +75,10 @@ radio.removeListener('stateChanged', stateChangedHandler);
 
 ## API
 
-* **camel cased methods for transition names** - Methods to change internal state defined by transition names : returns changed state or throws error
-* **is(state)** - Method to check if state machine is in a certain state : boolean
-* **can(transitionName)** - Check if a given transition can occur on the current state : boolean
-* **reset(state)** - Method to reset state machine to a given state : returns current state or throws error
+* **camel cased methods for transition names** - Methods to change internal state defined by transition names : returns **changed state** or throws **error**
+* **is(state)** - Method to check if state machine is in a certain state : **boolean**
+* **can(transitionName)** - Check if a given transition can occur on the current state : **boolean**
+* **reset(state)** - Method to reset state machine to a given state : returns **current state** or throws **error**
 
 All states and transitions of the StateMachine can be retrieved by using stateMachineInstance.states or stateMachineInstance.transitions ( will return a ES6 SET ).
 
