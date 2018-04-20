@@ -1,6 +1,6 @@
 {
   "name": "nodejs-state-machine",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node JS state machine managing tool",
   "main": "index.js",
   "scripts": {
