@@ -9,12 +9,20 @@
 const EventEmitter = require('events');
 const required = (requiredParamName) => { throw new Error(`Missing required parameter ${requiredParamName}`) };
 
+/**
+ * Camelize strings -> Foo Bar = fooBar
+ * @param {String} str 
+ */
 const camelize = (str) => {
     let string = str.replace(/[^A-Za-z0-9]/g, ' ').split(' ')
         .reduce((result, word) => result + capitalize(word));
     return string.charAt(0).toLowerCase() + string.slice(1);
 };
 
+/**
+ * Capitalizes first letter of a string and lowercases the rest.
+ * @param {String} str 
+ */
 const capitalize = str => str.charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
 module.exports = class StateMachine extends EventEmitter {
@@ -64,12 +72,13 @@ module.exports = class StateMachine extends EventEmitter {
             throw new Error(`State ${state} doesn't exist in state machine`);
         }
         this._currentState = state;
+        return this._currentState;
     }
 
 
 
     /**
-     * Internal method. Takes care of mapping transition states, and creating internal transitions dictionary
+     * Takes care of mapping transition states, and creating internal transitions dictionary
      * @param {} transition 
      */
     _mapTransition(transition) {
@@ -91,8 +100,11 @@ module.exports = class StateMachine extends EventEmitter {
 
     }
 
+    /**
+     * Adds a state to the object states set. Also defines value for transitionsMap[state] if that is undefined
+     * @param {String} state 
+     */
     _addState(state) {
-        this.states.add(state);
         this.states.add(state);
         if (typeof this._transitionsMap[state] === 'undefined') {
             //create empty object if state is first time defined
@@ -100,6 +112,11 @@ module.exports = class StateMachine extends EventEmitter {
         }
     }
 
+    /**
+     * Transition the state using a given transition name.
+     * Throws error if transition cannot be made from the current state to the target one.
+     * @param {String} transition 
+     */
     _transition(transition) {
         const canTransition = this._transitionCheck(transition);
         if (!canTransition) {
@@ -112,6 +129,10 @@ module.exports = class StateMachine extends EventEmitter {
         return this._currentState;
     }
 
+    /**
+     * Check if given transition can occur. Returns true or false.
+     * @param {*} transition 
+     */
     _transitionCheck(transition) {
         const currentState = this._currentState;
         const foundTransition = this._transitionsMap[currentState][transition];
