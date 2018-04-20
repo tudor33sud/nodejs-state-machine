@@ -82,6 +82,13 @@ radio.removeListener('stateChanged', stateChangedHandler);
 
 All states and transitions of the StateMachine can be retrieved by using stateMachineInstance.states or stateMachineInstance.transitions ( will return a ES6 SET ).
 
+## EVENTS
+
+State machine extends node's event emitter, so you can listen to events from it:
+
+* **stateChanged(from, to, transitionName)** - Triggered when a transition method was executed successfully. Can be useful for logging for example.
+
+
 ## State Management Overview
 
 For better description about managing the state, note that we use 2 main concepts: **transition** and **state**. 

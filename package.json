@@ -1,6 +1,6 @@
 {
   "name": "nodejs-state-machine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node JS state machine managing tool",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,13 @@
     "state",
     "machine",
     "nodejs-state-machine",
+    "node state machine",
+    "nodejs state machine",
+    "node state",
+    "state machine",
     "state-machine",
-    "finite"
+    "finite state machine",
+    "state management"
   ],
   "engines": {
     "node": ">=6.1.4"
