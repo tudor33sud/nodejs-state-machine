@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @typedef {Object} Transition
  * @property {String} name Transition name
@@ -8,7 +9,7 @@
  */
 const EventEmitter = require('events');
 const required = (requiredParamName) => { throw new Error(`Missing required parameter ${requiredParamName}`) };
-
+const { StateMachineError, errorCodes } = require('./errors');
 /**
  * Camelize strings -> Foo Bar = fooBar
  * @param {String} str 
@@ -42,7 +43,7 @@ module.exports = class StateMachine extends EventEmitter {
         }, this);
 
         if (!this.states.has(initialState)) {
-            throw new Error(`Initial state cannot be found in list of states`);
+            throw new StateMachineError(`Initial state cannot be found in list of states`, errorCodes.INITIAL_STATE_NOT_FOUND);
         }
 
     }
@@ -69,7 +70,7 @@ module.exports = class StateMachine extends EventEmitter {
      */
     reset(state) {
         if (!this.states.has(state)) {
-            throw new Error(`State ${state} doesn't exist in state machine`);
+            throw new StateMachineError(`State ${state} doesn't exist in state machine`, errorCodes.RESET_STATE_NOT_FOUND);
         }
         this._currentState = state;
         return this._currentState;
@@ -120,7 +121,7 @@ module.exports = class StateMachine extends EventEmitter {
     _transition(transition) {
         const canTransition = this._transitionCheck(transition);
         if (!canTransition) {
-            throw new Error(`Invalid transition ${transition} from the current state: ${this._currentState}`);
+            throw new StateMachineError(`Invalid transition ${transition} from the current state: ${this._currentState}`, errorCodes.INVALID_TRANSITION);
         }
         const targetState = this._transitionsMap[this._currentState][transition].to;
         const currentState = this._currentState;
