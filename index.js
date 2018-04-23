@@ -7,7 +7,6 @@
  * @typedef {Object} StateMachineOptions
  * @property {Array.<Transition>} transitions
  */
-const EventEmitter = require('events');
 const required = (requiredParamName) => { throw new Error(`Missing required parameter ${requiredParamName}`) };
 const { StateMachineError, errorCodes } = require('./errors');
 /**
@@ -26,18 +25,22 @@ const camelize = (str) => {
  */
 const capitalize = str => str.charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-module.exports = class StateMachine extends EventEmitter {
+const capitalizeFirstLetter = str => str.charAt(0).toUpperCase() + str.slice(1);
+
+module.exports = class StateMachine {
     /**
      * 
      * @param {String} initialState Initial state of the state machine
      * @param {StateMachineOptions} options State machine options object
      */
     constructor(initialState = required('initialState'), options = required('options')) {
-        super();
         this._currentState = initialState;
         this._transitionsMap = {};
         this.states = new Set();
         this.transitions = new Set();
+        Object.keys(options.handlers).forEach(handlerKey => {
+            this[handlerKey] = options.handlers[handlerKey];
+        }, this);
         options.transitions.forEach(transition => {
             this._mapTransition(transition);
         }, this);
@@ -65,6 +68,13 @@ module.exports = class StateMachine extends EventEmitter {
     }
 
     /**
+     * Get all available transitions names from the current state.
+     */
+    availableTransitions() {
+        return Object.keys(this._transitionsMap[this._currentState]);
+    }
+
+    /**
      * Reset the same state machine object to a certain state. State should be one of the registered states for this state machine.
      * @param {String} state 
      */
@@ -80,12 +90,17 @@ module.exports = class StateMachine extends EventEmitter {
 
     /**
      * Takes care of mapping transition states, and creating internal transitions dictionary
-     * @param {} transition 
+     * @param {String} transition 
      */
     _mapTransition(transition) {
-        this._addState(transition.to);
         const camelizedTransitionName = camelize(transition.name);
+        const handlerMethodName = `on${capitalizeFirstLetter(camelizedTransitionName)}`;
+
+        this._addState(transition.to);
         this.transitions.add(camelizedTransitionName);
+        if (typeof this[handlerMethodName] === 'undefined') {
+            this[handlerMethodName] = () => true;
+        }
         if (Array.isArray(transition.from)) {
             transition.from.forEach(state => {
                 this._addState(state);
@@ -96,8 +111,17 @@ module.exports = class StateMachine extends EventEmitter {
             this._transitionsMap[transition.from][camelizedTransitionName] = transition;
         }
 
-
-        this[camelizedTransitionName] = () => this._transition(camelizedTransitionName);
+        const self = this;
+        this[camelizedTransitionName] = (...args) => {
+            return self._verifyTransition(camelizedTransitionName).then(() => {
+                //invoke transition handler
+                return self[handlerMethodName](...args);
+            }).then((handlerData) => {
+                //change state machine internal state
+                self._transition(camelizedTransitionName);
+                return handlerData;
+            });
+        };
 
     }
 
@@ -115,23 +139,17 @@ module.exports = class StateMachine extends EventEmitter {
 
     /**
      * Transition the state using a given transition name.
-     * Throws error if transition cannot be made from the current state to the target one.
      * @param {String} transition 
      */
     _transition(transition) {
-        const canTransition = this._transitionCheck(transition);
-        if (!canTransition) {
-            throw new StateMachineError(`Invalid transition ${transition} from the current state: ${this._currentState}`, errorCodes.INVALID_TRANSITION);
-        }
         const targetState = this._transitionsMap[this._currentState][transition].to;
         const currentState = this._currentState;
         this._currentState = targetState;
-        this.emit('stateChanged', currentState, targetState, transition);
         return this._currentState;
     }
 
     /**
-     * Check if given transition can occur. Returns true or false.
+     * Check if given transition can occur. Returns true or false. Can throw error if configured.
      * @param {*} transition 
      */
     _transitionCheck(transition) {
@@ -142,5 +160,14 @@ module.exports = class StateMachine extends EventEmitter {
         }
         return true;
     }
-
+    _verifyTransition(transition) {
+        const self = this;
+        return new Promise((resolve, reject) => {
+            const canTransition = self._transitionCheck(transition);
+            if (!canTransition) {
+                throw new StateMachineError(`Invalid transition ${transition} from the current state: ${this._currentState}`, errorCodes.INVALID_TRANSITION);
+            }
+            resolve(true);
+        });
+    }
 };
