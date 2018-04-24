@@ -1,6 +1,8 @@
 # Nodejs State Machine
 
-Simple state machine management in Node JS without any external dependency
+Simple state machine management in Node JS without any external dependency.
+
+V2 moved to async transitions using promises.
 
 
 ## Prerequisites
@@ -30,30 +32,43 @@ const radio = new StateMachine('off', {
         { name: "turnOff", from: ["playing", "on", "paused"], to: "off" },
         { name: "turnOn", from: "off", to: "on" },
         { name: "pause", from: "playing", to: "paused" }
-    ]
+    ],
+    handlers: {
+        onPlaySong: (param) => {
+            console.log('playing song');
+        },
+        onTurnOff: () => {
+            console.log('turned off');
+            return true;
+        },
+        onTurnOn: async (parameter) => {
+            console.log('turned on');
+            //returned parameter here will be the resolved value on radio.turnOn promise
+            return task;
+        },
+        onPause: () => {
+            console.log('paused')
+        }
+    }
 });
 
-const stateChangedHandler = (from, to, transitionName) => {
-    console.log(`Applied transition ${transitionName} and changed state from ${from} to ${to}`);
-}
 
-radio.on('stateChanged', stateChangedHandler);
 try {
-    radio.playSong(); // notice how library automatically camel cases transition names for methods
+    await radio.playSong(); // notice how library automatically camel cases transition names for methods
 } catch (err) {
     //will throw error invalid transition cannot play song when radio is in stopped initial state
     console.log(err);
-}
-
+    }
 try {
     console.log(radio.can('playSong')); //false
+    console.log(radio.availableTransitions());
     console.log(radio.can('turnOn')); //true
-    console.log(radio.turnOn()); // returns target state, "on"
-    //you can now apply your business logic to turn on the radio
+    console.log(await radio.turnOn('parameter')); // returns target state, "on"
+    console.log(radio.availableTransitions());
     console.log(radio.is('on')); //check if radio is in on state, returns true
-    console.log(radio.turnOff()); // returns target state, "off"
+    console.log(await radio.turnOff()); // returns target state, "off"
     console.log(radio.reset('playing')); // helper method if one wants to reuse same state machine object, although not really recommended
-    console.log(radio.turnOn()); // will throw exception
+    console.log(await radio.turnOn()); // will throw exception
 
 } catch (err) {
     //catch turn on error
@@ -65,13 +80,13 @@ try {
     }
 }
 
-radio.removeListener('stateChanged', stateChangedHandler);
 
 ```
 
 ## Available options parameters
 
 * **transitions** - transitions array definition ([ { name:<name>, from:<fromState>, to:<toState> }])
+* **handlers** - handler functions definition
 
 ## API
 
@@ -79,6 +94,7 @@ radio.removeListener('stateChanged', stateChangedHandler);
 * **is(state)** - Method to check if state machine is in a certain state : **boolean**
 * **can(transitionName)** - Check if a given transition can occur on the current state : **boolean**
 * **reset(state)** - Method to reset state machine to a given state : returns **current state** or throws **error**
+* **availableTransitions()** - Method to return a list of all available transition names from the current state  : list of **transitions**
 
 All states and transitions of the StateMachine can be retrieved by using stateMachineInstance.states or stateMachineInstance.transitions ( will return a ES6 SET ).
 
