@@ -86,7 +86,14 @@ module.exports = class StateMachine {
         return this._currentState;
     }
 
-
+    /**
+     * Move the state machine to a state. Triggers the handler method.
+     * @param {String} state
+     */
+    to(state) {
+        const camelizedTransitionName = camelize(state);
+        return this[camelizedTransitionName]();
+    }
 
     /**
      * Takes care of mapping transition states, and creating internal transitions dictionary
